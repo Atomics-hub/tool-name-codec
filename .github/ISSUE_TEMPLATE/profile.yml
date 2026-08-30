@@ -1,0 +1,30 @@
+name: Provider profile request
+description: Request a new versioned provider-name contract.
+title: "[profile] "
+labels: [profile]
+body:
+  - type: input
+    id: provider
+    attributes:
+      label: Provider and API surface
+    validations:
+      required: true
+  - type: input
+    id: specification
+    attributes:
+      label: Authoritative specification URL
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Documented constraints and failing example
+    validations:
+      required: true
+  - type: checkboxes
+    id: evidence
+    attributes:
+      label: Evidence
+      options:
+        - label: I included an authoritative specification or reproducible provider response.
+          required: true

@@ -1,0 +1,105 @@
+<!doctype html>
+<meta charset="utf-8" />
+<link rel="icon" href="data:," />
+<title>tool-name-codec browser smoke: pending</title>
+<pre id="result">pending</pre>
+<script type="module">
+  import { compileToolNames, validateWireName } from "./src/index.mjs";
+
+  const first = compileToolNames(
+    [
+      { id: "github/search", namespace: "github.com", name: "search/code" },
+      { id: "gitlab/search", namespace: "gitlab.com", name: "search.code" },
+    ],
+    { profile: "portable-v1", reserved: ["tool_search"] },
+  );
+
+  const firstAlias = first.toWire("github/search");
+  const stateless = compileToolNames(
+    [{ id: "github/search", namespace: "github.com", name: "search/code" }],
+    { profile: "portable-v1", allocation: "stable-hash-v1" },
+  );
+  const statelessGrown = compileToolNames(
+    [
+      { id: "gitlab/search", namespace: "gitlab.com", name: "search.code" },
+      { id: "github/search", namespace: "github.com", name: "search/code" },
+    ],
+    { profile: "portable-v1", allocation: "stable-hash-v1" },
+  );
+  const grown = compileToolNames(
+    [
+      { id: "gitlab/search", namespace: "gitlab.com", name: "search.code" },
+      { id: "github/search", namespace: "github.com", name: "search/code" },
+      { id: "github/removed", namespace: "github.com", name: "removed" },
+    ],
+    {
+      profile: "portable-v1",
+      previousManifest: first.manifest,
+      reserved: ["tool_search"],
+    },
+  );
+
+  const workerResult = await new Promise((resolve, reject) => {
+    const worker = new Worker("./worker-smoke-worker.mjs", { type: "module" });
+    const timeout = setTimeout(
+      () => reject(new Error("browser worker timed out")),
+      5_000,
+    );
+    worker.onmessage = ({ data }) => {
+      clearTimeout(timeout);
+      worker.terminate();
+      resolve(data);
+    };
+    worker.onerror = (event) => reject(new Error(event.message));
+    worker.postMessage("run");
+  });
+
+  const checks = {
+    globals: {
+      process: typeof globalThis.process,
+      Buffer: typeof globalThis.Buffer,
+      crypto: typeof globalThis.crypto,
+    },
+    firstAlias,
+    aliasStable: grown.toWire("github/search") === firstAlias,
+    statelessStable:
+      statelessGrown.toWire("github/search") ===
+      stateless.toWire("github/search"),
+    statelessFullDigest:
+      stateless.toWire("github/search").length >= 54 &&
+      stateless.toWire("github/search").length <= 64,
+    reverseStable: grown.fromWire(firstAlias)?.id === "github/search",
+    newReverse:
+      grown.fromWire(grown.toWire("github/removed"))?.id === "github/removed",
+    valid: validateWireName(grown.toWire("github/removed"), "portable-v1").ok,
+    manifestRoundTrip:
+      JSON.parse(JSON.stringify(grown.manifest)).schema === "tool-name-codec/1",
+    manifestDeepFrozen:
+      Object.isFrozen(grown.manifest) &&
+      Object.isFrozen(grown.manifest.entries) &&
+      grown.manifest.entries.every(
+        (entry) => Object.isFrozen(entry) && Object.isFrozen(entry.reasons),
+      ),
+    worker: workerResult,
+    workerPassed:
+      workerResult.process === "undefined" &&
+      workerResult.Buffer === "undefined" &&
+      workerResult.unique &&
+      workerResult.valid &&
+      workerResult.reversible &&
+      workerResult.serializable &&
+      workerResult.statelessStable &&
+      workerResult.manifestDeepFrozen,
+  };
+
+  const passed = Object.entries(checks)
+    .filter(([key]) => key !== "globals" && key !== "worker")
+    .every(([, value]) => value === true || typeof value === "string");
+
+  document.querySelector("#result").textContent = JSON.stringify(
+    checks,
+    null,
+    2,
+  );
+  document.title = `tool-name-codec browser smoke: ${passed ? "PASS" : "FAIL"}`;
+</script>

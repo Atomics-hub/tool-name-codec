@@ -1,0 +1,46 @@
+name: Bug report
+description: Report incorrect allocation, validation, migration, or runtime behavior.
+title: "[bug] "
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime and version
+    validations:
+      required: true
+  - type: dropdown
+    id: profile
+    attributes:
+      label: Profile
+      options:
+        - portable-v1
+        - strict-portable-v1
+        - openai-v1
+        - anthropic-v1
+        - gemini-api-2026-08
+        - vertex-gemini-2026-08
+        - mcp-2025-11-25
+        - mcp-2026-07-28
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include entries, options, previous manifest when relevant, actual output, and expected output.
+      render: js
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+    validations:
+      required: true

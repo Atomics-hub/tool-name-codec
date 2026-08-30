@@ -1,0 +1,98 @@
+{
+  "name": "tool-name-codec",
+  "version": "0.1.0",
+  "description": "Stable, collision-safe tool names across MCP, OpenAI, Anthropic, and Gemini.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "tool-calling",
+    "function-calling",
+    "tool-name",
+    "openai",
+    "anthropic",
+    "gemini",
+    "ai-sdk",
+    "agent",
+    "collision",
+    "migration"
+  ],
+  "type": "module",
+  "license": "MIT",
+  "author": "Atomics Hub",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Atomics-hub/tool-name-codec.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Atomics-hub/tool-name-codec/issues"
+  },
+  "homepage": "https://github.com/Atomics-hub/tool-name-codec#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "npm@11.6.0",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p test/tsconfig.json",
+    "test": "node --test test.mjs test/*.test.mjs",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-lines=95 --test-coverage-functions=95 --test-coverage-branches=90 --test-coverage-include=src/index.mjs test.mjs test/*.test.mjs",
+    "test:runtime": "node runtime-smoke.mjs",
+    "test:deno": "deno run runtime-smoke.mjs && deno run --allow-read worker-smoke.mjs",
+    "test:bun": "bun run runtime-smoke.mjs",
+    "test:package": "node scripts/verify-package.mjs",
+    "test:examples": "node examples/multi-server.mjs && node examples/migration.mjs",
+    "lint:package": "node scripts/lint-package.mjs",
+    "fuzz": "node fuzz-boundary.mjs",
+    "fuzz:mutation": "node fuzz-mutation.mjs",
+    "stress": "node stress.mjs",
+    "stress:history": "node stress-history.mjs",
+    "differential": "node observed-differential.mjs",
+    "pack:check": "npm pack --dry-run --json --cache .npm-cache",
+    "release:check": "node scripts/check-release.mjs",
+    "verify": "npm run format:check && npm run lint && npm run build && npm run typecheck && npm run test:coverage && npm run fuzz && npm run fuzz:mutation && npm run release:check && npm run test:runtime && npm run test:package && npm run test:examples && npm run lint:package && npm run differential && npm run pack:check",
+    "prepublishOnly": "npm run verify"
+  },
+  "overrides": {
+    "esbuild": "^0.28.2"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.0.0",
+    "prettier": "^3.6.2",
+    "publint": "^0.3.24",
+    "typescript": "^5.9.2"
+  }
+}
